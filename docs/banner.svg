@@ -1,0 +1,96 @@
+<svg viewBox="0 0 900 240" xmlns="http://www.w3.org/2000/svg" width="900" height="240">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#100810"/>
+      <stop offset="100%" stop-color="#030305"/>
+    </radialGradient>
+    <radialGradient id="bloodLeft" cx="0%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5a0a0a" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#030305" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bloodRight" cx="100%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#200510" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#030305" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-30%" y="-60%" width="160%" height="220%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
+      <feColorMatrix in="blur" type="matrix"
+        values="1.2 0.6 0 0 0.05
+                0.5 0.3 0 0 0
+                0   0   0 0 0
+                0   0   0 0.7 0"
+        result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="subtitleGlow" x="-20%" y="-60%" width="140%" height="220%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background layers -->
+  <rect width="900" height="240" fill="url(#bg)"/>
+  <rect width="900" height="240" fill="url(#bloodLeft)"/>
+  <rect width="900" height="240" fill="url(#bloodRight)"/>
+
+  <!-- Outer border frame -->
+  <rect x="10" y="10" width="880" height="220" fill="none" stroke="#1e1e2a" stroke-width="1"/>
+  <!-- Inner border frame -->
+  <rect x="16" y="16" width="868" height="208" fill="none" stroke="#14141e" stroke-width="1"/>
+
+  <!-- Corner ornaments -->
+  <text x="24" y="34" font-family="Georgia, serif" font-size="11" fill="#3a2e10" opacity="0.9">✦</text>
+  <text x="861" y="34" font-family="Georgia, serif" font-size="11" fill="#3a2e10" opacity="0.9">✦</text>
+  <text x="24" y="218" font-family="Georgia, serif" font-size="11" fill="#3a2e10" opacity="0.9">✦</text>
+  <text x="861" y="218" font-family="Georgia, serif" font-size="11" fill="#3a2e10" opacity="0.9">✦</text>
+
+  <!-- Top rule + micro tagline -->
+  <line x1="45" y1="46" x2="380" y2="46" stroke="#2a1a0a" stroke-width="0.8"/>
+  <text x="450" y="51" text-anchor="middle" font-family="Georgia, serif" font-size="10" fill="#5a3a08" letter-spacing="3">· · ·</text>
+  <line x1="520" y1="46" x2="855" y2="46" stroke="#2a1a0a" stroke-width="0.8"/>
+
+  <!-- Chronicle label -->
+  <text x="450" y="72" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="9" fill="#3a3a50" letter-spacing="6">A CAUSAL NARRATIVE CHRONICLE</text>
+
+  <!-- MAIN TITLE -->
+  <text x="451" y="148"
+        text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="74" font-weight="bold"
+        fill="#a07020"
+        letter-spacing="20"
+        opacity="0.3">THREADFALL</text>
+  <text x="450" y="147"
+        text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="74" font-weight="bold"
+        fill="#c49030"
+        letter-spacing="20"
+        filter="url(#glow)">THREADFALL</text>
+
+  <!-- Blood-red divider line + subtitle -->
+  <line x1="45" y1="170" x2="278" y2="170" stroke="#5a0a0a" stroke-width="0.8"/>
+  <text x="450" y="174" text-anchor="middle"
+        font-family="Georgia, serif" font-size="11"
+        fill="#8a1515" letter-spacing="7"
+        filter="url(#subtitleGlow)">THE SHATTERED PACT</text>
+  <line x1="622" y1="170" x2="855" y2="170" stroke="#5a0a0a" stroke-width="0.8"/>
+
+  <!-- Campaign tagline -->
+  <text x="450" y="198" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="10" fill="#2e2e42"
+        font-style="italic"
+        letter-spacing="1.5">An ancient pact between kingdoms shatters. One hero must navigate politics, war, and betrayal — or watch the realm burn.</text>
+
+  <!-- Bottom rule -->
+  <line x1="45" y1="210" x2="855" y2="210" stroke="#14141e" stroke-width="0.8"/>
+</svg>
