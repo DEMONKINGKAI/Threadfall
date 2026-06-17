@@ -1,0 +1,149 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&family=Crimson+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Backgrounds */
+  --void:        #030305;
+  --ink:         #06060c;
+  --ink-raised:  #0a0a12;
+  --stone:       #0e0e18;
+  --stone-mid:   #14141f;
+  --stone-light: #1c1c2a;
+
+  /* Borders */
+  --border-dim:    #18181f;
+  --border:        #22222e;
+  --border-warm:   #2a1a1a;
+  --border-bright: #3a2222;
+  --border-gold:   #3a2e10;
+
+  /* Text */
+  --parchment:     #d8ccb0;
+  --parchment-mid: #a8997a;
+  --parchment-dim: #6a5e48;
+  --mist:          #4a4a62;
+
+  /* Accents */
+  --blood:         #5a0a0a;
+  --blood-mid:     #7a1010;
+  --blood-bright:  #9a1818;
+  --crimson:       #3a0808;
+  --gold:          #6a4e0a;
+  --gold-mid:      #8a6a18;
+  --gold-text:     #c49030;
+  --gold-bright:   #d4a840;
+  --gold-dim:      #7a5a18;
+
+  /* Outcome colours */
+  --success-bg:    rgba(10,30,10,0.6);
+  --success-border:#1a3a1a;
+  --success-text:  #4a9a4a;
+  --partial-bg:    rgba(30,22,0,0.6);
+  --partial-border:#3a2e00;
+  --partial-text:  #a8821a;
+  --failure-bg:    rgba(30,6,6,0.6);
+  --failure-border:#3a1010;
+  --failure-text:  #9a3030;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background: var(--void);
+  color: var(--parchment);
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.65;
+  margin: 0;
+  /* Subtle noise texture */
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(90,10,10,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(10,10,40,0.06) 0%, transparent 50%);
+}
+
+/* ── Typography ─────────────────────────────────────────────────────────── */
+.font-display   { font-family: 'Cinzel Decorative', 'Cinzel', serif; }
+.font-heading   { font-family: 'Cinzel', serif; }
+.font-narrative { font-family: 'IM Fell English', Georgia, serif; }
+.font-body      { font-family: 'Crimson Text', Georgia, serif; }
+
+/* ── Ornamental divider ─────────────────────────────────────────────────── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--gold-dim);
+}
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border-gold), transparent);
+}
+
+/* ── Panel borders (etched stone look) ─────────────────────────────────── */
+.panel-border {
+  border: 1px solid var(--border);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.02),
+    0 1px 3px rgba(0,0,0,0.8);
+}
+
+.panel-border-warm {
+  border: 1px solid var(--border-warm);
+  box-shadow:
+    inset 0 1px 0 rgba(180,80,80,0.03),
+    0 1px 3px rgba(0,0,0,0.9);
+}
+
+/* ── Gothic input ───────────────────────────────────────────────────────── */
+.gothic-input {
+  background: var(--stone);
+  border: 1px solid var(--border);
+  color: var(--parchment);
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 1rem;
+  transition: border-color 0.15s;
+}
+.gothic-input:focus { outline: none; border-color: var(--gold-dim); }
+.gothic-input::placeholder { color: var(--mist); }
+
+/* ── Outcome badge ──────────────────────────────────────────────────────── */
+.badge-success  { background: var(--success-bg); border-color: var(--success-border); color: var(--success-text); }
+.badge-partial  { background: var(--partial-bg); border-color: var(--partial-border); color: var(--partial-text); }
+.badge-failure  { background: var(--failure-bg); border-color: var(--failure-border); color: var(--failure-text); }
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 3px; }
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb { background: var(--stone-light); border-radius: 1px; }
+
+/* ── Corner ornament (CSS pseudo) ───────────────────────────────────────── */
+.corner-ornament {
+  position: relative;
+}
+.corner-ornament::before,
+.corner-ornament::after {
+  content: '✦';
+  position: absolute;
+  color: var(--gold-dim);
+  font-size: 0.5rem;
+  opacity: 0.6;
+}
+.corner-ornament::before { top: 4px; left: 6px; }
+.corner-ornament::after  { top: 4px; right: 6px; }
+
+/* ── Vignette overlay on body ───────────────────────────────────────────── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.5) 100%);
+  z-index: 9999;
+}

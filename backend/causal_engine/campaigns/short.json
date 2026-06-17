@@ -1,0 +1,127 @@
+{
+  "campaign": {
+    "name": "The Stolen Crown",
+    "mode": "short",
+    "acts": 3,
+    "description": "A rogue must recover a stolen crown before the false king is crowned at dawn."
+  },
+  "nodes": [
+    {
+      "id": "combat_outcome",
+      "type": "action",
+      "states": ["failure", "partial", "success"],
+      "description": "Result of a combat action"
+    },
+    {
+      "id": "npc_interaction",
+      "type": "action",
+      "states": ["failure", "partial", "success"],
+      "description": "Result of a social or negotiation action"
+    },
+    {
+      "id": "resource_use",
+      "type": "action",
+      "states": ["wasteful", "normal", "efficient"],
+      "description": "Result of using items or spending gold"
+    },
+    {
+      "id": "player_health",
+      "type": "state",
+      "states": ["critical", "wounded", "healthy", "full"],
+      "current_state": "full",
+      "description": "Player's physical condition"
+    },
+    {
+      "id": "enemy_defeated",
+      "type": "state",
+      "states": ["no", "partial", "yes"],
+      "current_state": "no",
+      "description": "Whether the primary antagonist has been defeated"
+    },
+    {
+      "id": "npc_trust",
+      "type": "state",
+      "states": ["hostile", "neutral", "friendly", "allied"],
+      "current_state": "neutral",
+      "description": "How much key NPCs trust the player"
+    },
+    {
+      "id": "town_reputation",
+      "type": "state",
+      "states": ["infamous", "unknown", "known", "respected"],
+      "current_state": "unknown",
+      "description": "The player's reputation in the town"
+    },
+    {
+      "id": "gold_remaining",
+      "type": "state",
+      "states": ["broke", "poor", "comfortable", "wealthy"],
+      "current_state": "comfortable",
+      "description": "The player's financial state"
+    },
+    {
+      "id": "item_inventory",
+      "type": "state",
+      "states": ["empty", "sparse", "stocked", "full"],
+      "current_state": "stocked",
+      "description": "Quality and quantity of items the player carries"
+    },
+    {
+      "id": "act1_milestone",
+      "type": "milestone",
+      "states": ["incomplete", "partial", "complete"],
+      "current_state": null,
+      "description": "Act 1: Gather information and allies in the town"
+    },
+    {
+      "id": "act2_milestone",
+      "type": "milestone",
+      "states": ["incomplete", "partial", "complete"],
+      "current_state": null,
+      "description": "Act 2: Infiltrate the keep and locate the crown"
+    },
+    {
+      "id": "final_outcome",
+      "type": "outcome",
+      "states": ["story_failure", "story_neutral", "story_victory"],
+      "current_state": null,
+      "description": "How the story ends"
+    }
+  ],
+  "edges": [
+    { "source": "combat_outcome",   "target": "player_health",    "weight": 1.0 },
+    { "source": "combat_outcome",   "target": "enemy_defeated",   "weight": 1.2 },
+    { "source": "npc_interaction",  "target": "npc_trust",        "weight": 1.5 },
+    { "source": "npc_interaction",  "target": "town_reputation",  "weight": 1.0 },
+    { "source": "resource_use",     "target": "gold_remaining",   "weight": 1.0 },
+    { "source": "resource_use",     "target": "item_inventory",   "weight": 0.8 },
+    { "source": "npc_trust",        "target": "act1_milestone",   "weight": 1.5 },
+    { "source": "town_reputation",  "target": "act1_milestone",   "weight": 1.0 },
+    { "source": "enemy_defeated",   "target": "act2_milestone",   "weight": 1.5 },
+    { "source": "player_health",    "target": "act2_milestone",   "weight": 1.0 },
+    { "source": "act1_milestone",   "target": "final_outcome",    "weight": 1.2 },
+    { "source": "act2_milestone",   "target": "final_outcome",    "weight": 1.5 },
+    { "source": "gold_remaining",   "target": "final_outcome",    "weight": 0.8 }
+  ],
+  "scenes": {
+    "act1": [
+      "You arrive at the rain-soaked town of Velmoor. Rumors swirl — the king's crown was stolen the night before his coronation.",
+      "The tavern keeper eyes you suspiciously. The town guard patrols are doubled tonight.",
+      "A cloaked figure beckons from an alley. They claim to know where the crown is hidden.",
+      "The market is chaos — merchants argue, a pickpocket darts through the crowd.",
+      "Dawn is six hours away. The false king's ceremony cannot be stopped without the crown."
+    ],
+    "act2": [
+      "The keep looms ahead. Two guards flank the iron gate.",
+      "Inside, tapestries muffle sound. You hear voices from the east wing.",
+      "A locked door. Beyond it, something heavy shifts.",
+      "The crown chamber. But you are not alone.",
+      "The city bell tolls — five hours until dawn."
+    ],
+    "act3": [
+      "The false king's throne room. Your moment arrives.",
+      "Everything you did to reach this moment has shaped what happens next.",
+      "The final confrontation unfolds exactly as the threads of fate determined."
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+huggingface_hub>=0.23.0
+requests>=2.31.0
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.6.0
+numpy>=1.26.0
+pgmpy>=0.1.25

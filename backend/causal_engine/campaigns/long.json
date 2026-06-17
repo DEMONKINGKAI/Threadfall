@@ -1,0 +1,104 @@
+{
+  "campaign": {
+    "name": "The Shattered Pact",
+    "mode": "long",
+    "acts": 5,
+    "description": "An ancient pact between kingdoms shatters. One hero must navigate politics, war, and betrayal to forge a new age — or watch the realm burn."
+  },
+  "nodes": [
+    { "id": "combat_outcome",     "type": "action",    "states": ["failure", "partial", "success"],           "description": "Result of a combat action" },
+    { "id": "npc_interaction",    "type": "action",    "states": ["failure", "partial", "success"],           "description": "Result of a social or negotiation action" },
+    { "id": "resource_use",       "type": "action",    "states": ["wasteful", "normal", "efficient"],         "description": "Result of using items or spending gold" },
+    { "id": "espionage_action",   "type": "action",    "states": ["failure", "partial", "success"],           "description": "Result of a stealth or intelligence action" },
+    { "id": "political_action",   "type": "action",    "states": ["failure", "partial", "success"],           "description": "Result of a formal political maneuver" },
+
+    { "id": "player_health",      "type": "state",     "states": ["critical", "wounded", "healthy", "full"],  "current_state": "full",        "description": "Player's physical condition" },
+    { "id": "enemy_defeated",     "type": "state",     "states": ["no", "partial", "yes"],                    "current_state": "no",          "description": "Whether the primary antagonist has been neutralized" },
+    { "id": "npc_trust",          "type": "state",     "states": ["hostile", "neutral", "friendly", "allied"],"current_state": "neutral",     "description": "How much key NPCs trust the player" },
+    { "id": "town_reputation",    "type": "state",     "states": ["infamous", "unknown", "known", "respected"],"current_state": "unknown",    "description": "The player's standing in the realm" },
+    { "id": "gold_remaining",     "type": "state",     "states": ["broke", "poor", "comfortable", "wealthy"], "current_state": "comfortable", "description": "The player's financial state" },
+    { "id": "item_inventory",     "type": "state",     "states": ["empty", "sparse", "stocked", "full"],      "current_state": "stocked",     "description": "Quality and quantity of items" },
+    { "id": "faction_loyalty",    "type": "state",     "states": ["betrayed", "divided", "aligned", "unified"],"current_state": "divided",   "description": "Loyalty of major factions to the player's cause" },
+    { "id": "secret_knowledge",   "type": "state",     "states": ["ignorant", "partial", "informed", "master"],"current_state": "ignorant",  "description": "How much of the conspiracy the player has uncovered" },
+    { "id": "conflict_status",         "type": "state",     "states": ["escalating", "stalemate", "de-escalating", "peace"],"current_state": "escalating","description": "State of the war between the kingdoms" },
+    { "id": "pact_integrity",     "type": "state",     "states": ["broken", "fragile", "stable", "restored"],"current_state": "broken",     "description": "State of the ancient pact" },
+
+    { "id": "act1_milestone",     "type": "milestone", "states": ["incomplete", "partial", "complete"],       "current_state": null,          "description": "Act 1: Survive the ambush and reach the capital" },
+    { "id": "act2_milestone",     "type": "milestone", "states": ["incomplete", "partial", "complete"],       "current_state": null,          "description": "Act 2: Expose the traitor within the council" },
+    { "id": "act3_milestone",     "type": "milestone", "states": ["incomplete", "partial", "complete"],       "current_state": null,          "description": "Act 3: Prevent the assassination of the last loyal king" },
+    { "id": "act4_milestone",     "type": "milestone", "states": ["incomplete", "partial", "complete"],       "current_state": null,          "description": "Act 4: Forge a new alliance across enemy lines" },
+    { "id": "final_outcome",      "type": "outcome",   "states": ["story_failure", "story_neutral", "story_victory"],"current_state": null,  "description": "How the story ends" }
+  ],
+  "edges": [
+    { "source": "combat_outcome",   "target": "player_health",   "weight": 1.0 },
+    { "source": "combat_outcome",   "target": "enemy_defeated",  "weight": 1.2 },
+    { "source": "combat_outcome",   "target": "conflict_status",      "weight": 0.8 },
+    { "source": "npc_interaction",  "target": "npc_trust",       "weight": 1.5 },
+    { "source": "npc_interaction",  "target": "town_reputation", "weight": 1.0 },
+    { "source": "npc_interaction",  "target": "faction_loyalty", "weight": 1.0 },
+    { "source": "resource_use",     "target": "gold_remaining",  "weight": 1.0 },
+    { "source": "resource_use",     "target": "item_inventory",  "weight": 0.8 },
+    { "source": "espionage_action", "target": "secret_knowledge","weight": 1.5 },
+    { "source": "espionage_action", "target": "npc_trust",       "weight": 0.7 },
+    { "source": "political_action", "target": "faction_loyalty", "weight": 1.5 },
+    { "source": "political_action", "target": "conflict_status",      "weight": 1.2 },
+    { "source": "political_action", "target": "pact_integrity",  "weight": 1.0 },
+
+    { "source": "npc_trust",        "target": "act1_milestone",  "weight": 1.0 },
+    { "source": "player_health",    "target": "act1_milestone",  "weight": 0.8 },
+    { "source": "secret_knowledge", "target": "act2_milestone",  "weight": 1.5 },
+    { "source": "faction_loyalty",  "target": "act2_milestone",  "weight": 1.0 },
+    { "source": "enemy_defeated",   "target": "act3_milestone",  "weight": 1.5 },
+    { "source": "conflict_status",       "target": "act3_milestone",  "weight": 1.0 },
+    { "source": "faction_loyalty",  "target": "act4_milestone",  "weight": 1.5 },
+    { "source": "pact_integrity",   "target": "act4_milestone",  "weight": 1.2 },
+
+    { "source": "act1_milestone",   "target": "final_outcome",   "weight": 0.8 },
+    { "source": "act2_milestone",   "target": "final_outcome",   "weight": 1.0 },
+    { "source": "act3_milestone",   "target": "final_outcome",   "weight": 1.2 },
+    { "source": "act4_milestone",   "target": "final_outcome",   "weight": 1.5 },
+    { "source": "pact_integrity",   "target": "final_outcome",   "weight": 1.0 },
+    { "source": "gold_remaining",   "target": "final_outcome",   "weight": 0.5 }
+  ],
+  "scenes": {
+    "act1": [
+      "The escort convoy is ambushed at the mountain pass. Crossbow bolts whistle through the night air.",
+      "Three survivors. The diplomatic documents are missing. Somewhere ahead lies Calder's Rest.",
+      "The village is occupied — soldiers bearing the wrong banner patrol the streets.",
+      "An old woman slips you a note: *'The council already knows you're coming.'*",
+      "The capital gates rise before you. The guards' eyes linger a moment too long.",
+      "Your quarters in the palace are too clean. Someone was here recently.",
+      "The first council session. Four faces watch you. One of them ordered the ambush."
+    ],
+    "act2": [
+      "The archives contain gaps — specific dates excised from the record.",
+      "The spymaster is found dead. The scene was staged.",
+      "A messenger pigeon arrives for the wrong chamber.",
+      "The traitor's name sits at the edge of your knowledge, tantalizingly close.",
+      "A council vote is called. You must act before the session ends.",
+      "The confrontation. Evidence laid bare. The room holds its breath.",
+      "Chaos erupts. Loyalties are chosen tonight."
+    ],
+    "act3": [
+      "Word comes — an assassin has entered the palace.",
+      "The loyal king is meeting with his advisors. You have minutes.",
+      "Three corridors. One assassin. Your choices narrow.",
+      "The throne room fills with screams or silence — depending on what you did.",
+      "In the aftermath, the shape of the war changes.",
+      "Old alliances crack. New ones are possible.",
+      "Dawn reveals a kingdom transformed."
+    ],
+    "act4": [
+      "The enemy emissary arrives under a white flag. They are frightened.",
+      "The ancient pact's original text is recovered from the ruins.",
+      "Three factions must each give something. None wants to go first.",
+      "A final ceremony on the border. The words of the new pact must be spoken.",
+      "The realm waits. This moment will be remembered or mourned for a generation."
+    ],
+    "act5": [
+      "The threads of every choice you made converge here.",
+      "The realm remembers what you did — and what you did not do.",
+      "The Shattered Pact finds its ending."
+    ]
+  }
+}
