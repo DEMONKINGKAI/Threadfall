@@ -124,13 +124,8 @@ class CharacterSheet:
         p = self.success_probability(action_type)
         states = OUTCOME_STATES.get(action_type, ["failure", "partial", "success"])
 
-        if rng_value < (1 - p) * (1 - _FAILURE_THRESHOLD / (1 - p + 1e-9)):
-            # Simplified: use two thresholds derived from p
-            pass
-
-        # Map rng_value to outcome
-        # Partition [0,1] proportionally: failure gets (1-p)^2, success gets p^2,
-        # partial gets the rest — this makes success more likely when p is high.
+        # Partition [0,1]: failure gets (1-p)^1.5, success gets p^1.5,
+        # partial fills the remainder — success more likely when p is high.
         p_fail = (1 - p) ** 1.5
         p_success = p ** 1.5
         p_partial = max(0.0, 1.0 - p_fail - p_success)

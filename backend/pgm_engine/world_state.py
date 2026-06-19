@@ -227,9 +227,9 @@ class WorldState:
                         s: float(result.values[i])
                         for i, s in enumerate(node.states)
                     }
-        except Exception:
-            # Inference can fail if evidence is inconsistent; keep old beliefs
-            pass
+        except Exception as e:
+            # Inference can fail on inconsistent evidence; log and keep old beliefs
+            print(f"[world_state] BN inference failed — keeping prior beliefs. Reason: {e}")
 
     # ── Public API ───────────────────────────────────────────────────────────
 

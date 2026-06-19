@@ -1,12 +1,4 @@
-import React, { useEffect, useRef } from "react";
-
-// Attempt to use Cytoscape; graceful fallback if not installed.
-let cytoscape;
-try {
-  cytoscape = (await import("cytoscape")).default;
-} catch {
-  cytoscape = null;
-}
+import React, { useEffect, useRef, useState } from "react";
 
 const NODE_TYPE_COLOR = {
   action:    "#6b0f0f",
@@ -16,8 +8,7 @@ const NODE_TYPE_COLOR = {
 };
 
 const STATE_OPACITY = {
-  // Nodes with a determined state are bright; undetermined are dim
-  determined: 1.0,
+  determined:   1.0,
   undetermined: 0.35,
 };
 
@@ -39,12 +30,7 @@ function buildElements(worldState, beliefs, dagNodes, dagEdges) {
   });
 
   const edges = dagEdges.map((e, i) => ({
-    data: {
-      id: `e${i}`,
-      source: e.source,
-      target: e.target,
-      weight: e.weight,
-    },
+    data: { id: `e${i}`, source: e.source, target: e.target, weight: e.weight },
   }));
 
   return [...nodes, ...edges];
@@ -52,18 +38,26 @@ function buildElements(worldState, beliefs, dagNodes, dagEdges) {
 
 function FallbackGraph({ worldState, beliefs }) {
   return (
-    <div className="p-4 space-y-1 overflow-y-auto h-full">
-      <div className="text-xs text-mist mb-2 uppercase tracking-wider">World State</div>
+    <div className="p-4 space-y-1 overflow-y-auto h-full" style={{ fontSize: "0.7rem" }}>
+      <div className="uppercase tracking-widest mb-2"
+        style={{ fontFamily: "Cinzel, serif", color: "var(--gold-dim)", fontSize: "0.55rem" }}>
+        World Nodes
+      </div>
       {Object.entries(worldState || {}).map(([node, state]) => {
         const belief = beliefs?.find((b) => b.node_id === node);
         const conf = belief ? Math.max(...Object.values(belief.states)) : null;
         return (
-          <div key={node} className="flex justify-between text-xs border-b border-[#2a2a4c] py-1">
-            <span className="text-parchment capitalize">{node.replace(/_/g, " ")}</span>
-            <span className="text-gold">
+          <div key={node}
+            className="flex justify-between py-1 capitalize"
+            style={{ borderBottom: "1px solid var(--border-dim)", color: "var(--parchment-dim)" }}
+          >
+            <span>{node.replace(/_/g, " ")}</span>
+            <span style={{ color: "var(--gold-text)" }}>
               {state}
               {conf !== null && (
-                <span className="text-mist ml-1">({(conf * 100).toFixed(0)}%)</span>
+                <span style={{ color: "var(--mist)", marginLeft: 4 }}>
+                  {(conf * 100).toFixed(0)}%
+                </span>
               )}
             </span>
           </div>
@@ -75,21 +69,31 @@ function FallbackGraph({ worldState, beliefs }) {
 
 export default function CausalGraph({ worldState, beliefs, dagMeta }) {
   const containerRef = useRef(null);
-  const cyRef = useRef(null);
+  const cyRef        = useRef(null);
+  // cytoscape is lazy-loaded once on mount; null = not yet loaded, false = unavailable
+  const [cytoscape, setCytoscape] = useState(null);
 
+  // ── Lazy-load cytoscape on first mount ──────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    import("cytoscape")
+      .then((mod) => { if (!cancelled) setCytoscape(() => mod.default); })
+      .catch(() => { if (!cancelled) setCytoscape(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // ── Build / rebuild the graph whenever data or cytoscape changes ─────────────
   useEffect(() => {
     if (!cytoscape || !containerRef.current || !dagMeta) return;
 
     const elements = buildElements(
       worldState || {},
-      beliefs || [],
+      beliefs    || [],
       dagMeta.nodes,
-      dagMeta.edges
+      dagMeta.edges,
     );
 
-    if (cyRef.current) {
-      cyRef.current.destroy();
-    }
+    cyRef.current?.destroy();
 
     cyRef.current = cytoscape({
       container: containerRef.current,
@@ -101,24 +105,18 @@ export default function CausalGraph({ worldState, beliefs, dagMeta }) {
             label: "data(label)",
             "text-valign": "center",
             "text-halign": "center",
-            "font-size": "8px",
+            "font-size": "7px",
             "font-family": "Georgia, serif",
-            color: "#f5f0e8",
+            color: "#d8ccb0",
             "text-wrap": "wrap",
-            "background-color": (ele) =>
-              NODE_TYPE_COLOR[ele.data("nodeType")] || "#555",
-            opacity: (ele) =>
-              ele.data("isDetermined")
-                ? STATE_OPACITY.determined
-                : STATE_OPACITY.undetermined,
-            width: 60,
-            height: 40,
+            "background-color": (ele) => NODE_TYPE_COLOR[ele.data("nodeType")] || "#333",
+            opacity: (ele) => ele.data("isDetermined") ? STATE_OPACITY.determined : STATE_OPACITY.undetermined,
+            width: 58,
+            height: 38,
             shape: (ele) =>
-              ele.data("nodeType") === "outcome"
-                ? "diamond"
-                : ele.data("nodeType") === "milestone"
-                ? "hexagon"
-                : "roundrectangle",
+              ele.data("nodeType") === "outcome"   ? "diamond"
+              : ele.data("nodeType") === "milestone" ? "hexagon"
+              : "roundrectangle",
           },
         },
         {
@@ -141,33 +139,29 @@ export default function CausalGraph({ worldState, beliefs, dagMeta }) {
       },
       userZoomingEnabled: true,
       userPanningEnabled: true,
-      autolock: false,
     });
 
     return () => {
       cyRef.current?.destroy();
       cyRef.current = null;
     };
-  }, [worldState, beliefs, dagMeta]);
+  }, [cytoscape, worldState, beliefs, dagMeta]);
 
-  if (!cytoscape || !dagMeta) {
+  // cytoscape === null  → still loading
+  // cytoscape === false → load failed, use fallback
+  if (cytoscape === false || !dagMeta) {
     return <FallbackGraph worldState={worldState} beliefs={beliefs} />;
   }
 
   return (
     <div className="relative w-full h-full">
+      {cytoscape === null && (
+        <div className="absolute inset-0 flex items-center justify-center"
+          style={{ color: "var(--mist)", fontFamily: "Cinzel, serif", fontSize: "0.6rem" }}>
+          Loading graph…
+        </div>
+      )}
       <div ref={containerRef} className="w-full h-full" />
-      <div className="absolute bottom-2 left-2 flex gap-2 flex-wrap">
-        {Object.entries(NODE_TYPE_COLOR).map(([type, color]) => (
-          <span key={type} className="text-xs flex items-center gap-1">
-            <span
-              className="inline-block w-3 h-3 rounded-sm"
-              style={{ backgroundColor: color }}
-            />
-            <span className="text-mist capitalize">{type}</span>
-          </span>
-        ))}
-      </div>
     </div>
   );
 }
