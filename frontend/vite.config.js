@@ -8,6 +8,7 @@ export default defineConfig({
     proxy: {
       "/new_game":            "http://localhost:8000",
       "/action":              "http://localhost:8000",
+      "/stream_action":       "http://localhost:8000",
       "/session":             "http://localhost:8000",
       "/randomize_character": "http://localhost:8000",
     },

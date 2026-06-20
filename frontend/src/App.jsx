@@ -354,6 +354,10 @@ export default function App() {
     }));
   }
 
+  function handleRestart() {
+    setGameState(null);
+  }
+
   if (!gameState) return <CharacterForm onStart={handleStart} />;
-  return <GameView gameState={gameState} onStateUpdate={handleStateUpdate} dagMeta={dagMeta} />;
+  return <GameView gameState={gameState} onStateUpdate={handleStateUpdate} dagMeta={dagMeta} onRestart={handleRestart} />;
 }

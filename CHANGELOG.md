@@ -5,16 +5,29 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.4.0] — Tasks 5–10
+
+### Added
+- **Streaming LLM narrator** (Task 5): `POST /stream_action` SSE endpoint; `narrate_stream()` generator in `narrator.py` uses `stream=True`. Frontend streams via `fetch` + `ReadableStream`; outcome badge visible immediately while tokens arrive.
+- **Narrative history on refresh** (Task 6): entries saved to `localStorage[tf_entries_{sessionId}]` and reloaded on `GameView` mount.
+- **"New Chronicle" restart button** (Task 7): game-over footer button + `↺ restart` in right-panel header; both call `onRestart()` → `setGameState(null)`.
+- **Act transition title card** (Task 8): full-screen dark overlay, `actFadeInOut` CSS keyframe 2.8s, shows `ACT N` + act title whenever `currentAct` advances.
+- **Differentiated game-over screen** (Task 9): `story_victory` → gold "VICTORY"; `story_failure` → crimson "RUIN"; `story_neutral` → parchment "THE BALANCE HOLDS".
+
+### Changed
+- **Randomizer decoupled** (Task 10): all randomizer logic moved to `backend/llm/randomizer.py`; `main.py` imports only `randomize_character`.
+- `narrate_stream()` added to `backend/llm/narrator.py`.
+- `NarrativeFeed` accepts `streamingEntry` prop; renders gold marker + blinking cursor during stream.
+- `api.js` exports `streamAction()` (SSE-over-fetch).
+- `index.css`: `@keyframes actFadeInOut`, `.streaming-cursor` blink.
+- Vite proxy: `/stream_action` added.
+
+---
+
 ## [Unreleased]
 
-> Changes planned but not yet implemented — see shortcomings list.
+> Remaining shortcomings — see audit list items 11–20.
 
-- Streaming LLM narrator (token-by-token via SSE)
-- Narrative history restored on page refresh via `/session/{id}`
-- "New Chronicle" restart button in GameView
-- Act transition animated title card
-- Differentiated game-over screen (crimson / gold / silver per outcome)
-- `llm/randomizer.py` module (decouple randomizer from `main.py`)
 - Input length cap (400 chars) with frontend character counter
 - 30-second timeout on all LLM calls
 - Auto-generate `dagMeta.json` from `long.json` at startup
@@ -110,3 +123,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 | Dead code block in `character.py:sample_outcome()` | 0.3.1 |
 | `CausalGraph.jsx` top-level `await import()` breaking Vite bundling | 0.3.1 |
 | BN inference failure silently swallowed | 0.3.1 |
+| 5–15 second blocking LLM wait (no streaming) | 0.4.0 |
+| Narrative history lost on page refresh | 0.4.0 |
+| No way to start a new run without refreshing the page | 0.4.0 |
+| Game-over screen identical for all three outcomes | 0.4.0 |
+| Randomizer logic coupled directly into `main.py` | 0.4.0 |

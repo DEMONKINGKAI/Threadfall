@@ -8,6 +8,8 @@ Set HF_TOKEN environment variable to your HuggingFace access token.
 from __future__ import annotations
 
 import os
+from collections.abc import Generator
+
 from huggingface_hub import InferenceClient
 
 _HF_TOKEN = os.environ.get("HF_TOKEN")
@@ -198,3 +200,76 @@ def _fallback_narration(success_level: str, downstream_changes: dict[str, str]) 
     }.get(success_level, "The moment passes, leaving its mark.")
 
     return f"{tone}\n\nAs a result, {effects}."
+
+
+def narrate_stream(
+    *,
+    current_act: int,
+    total_acts: int,
+    action: str,
+    success_level: str,
+    probability: float,
+    relevant_stat: str,
+    downstream_changes: dict[str, str],
+    world_state: dict[str, str],
+    character_name: str,
+    character_class: str,
+    character_level: int,
+    action_history: list[dict] | None = None,
+) -> Generator[dict, None, None]:
+    """
+    Streaming variant of narrate().
+
+    Yields dicts:
+      {"type": "token", "text": "<chunk>"}   — one per streamed token
+      {"type": "done",  "prose": "<full>", "title": "<title>"}  — final event
+    """
+    user_content = _USER_TEMPLATE.format(
+        current_act=current_act,
+        total_acts=total_acts,
+        act_description=_ACT_DESCRIPTIONS.get(current_act, "The story continues"),
+        history_lines=_format_history(action_history or []),
+        world_state_lines=_format_world_state(world_state),
+        action=action,
+        success_level=success_level,
+        probability=probability,
+        relevant_stat=relevant_stat,
+        causal_consequences=_format_consequences(downstream_changes),
+        character_name=character_name,
+        character_class=character_class,
+        character_level=character_level,
+    )
+
+    accumulated = ""
+
+    if _HF_TOKEN:
+        for model in _MODELS:
+            try:
+                client = InferenceClient(model=model, token=_HF_TOKEN)
+                stream = client.chat_completion(
+                    messages=[
+                        {"role": "system", "content": _SYSTEM},
+                        {"role": "user",   "content": user_content},
+                    ],
+                    max_tokens=600,
+                    temperature=0.85,
+                    stream=True,
+                )
+                for chunk in stream:
+                    token = chunk.choices[0].delta.content or ""
+                    if token:
+                        accumulated += token
+                        yield {"type": "token", "text": token}
+                print(f"[narrator] streaming success with {model}")
+                break
+            except Exception as e:
+                print(f"[narrator] {model} streaming failed: {e}")
+                accumulated = ""  # reset on failure, try next model
+
+    prose, title = _parse_response(
+        accumulated if accumulated else None,
+        success_level,
+        downstream_changes,
+        current_act,
+    )
+    yield {"type": "done", "prose": prose, "title": title}

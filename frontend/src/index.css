@@ -137,6 +137,32 @@ body {
 .corner-ornament::before { top: 4px; left: 6px; }
 .corner-ornament::after  { top: 4px; right: 6px; }
 
+/* ── Act transition overlay ─────────────────────────────────────────────── */
+@keyframes actFadeInOut {
+  0%   { opacity: 0; transform: scale(1.04); }
+  18%  { opacity: 1; transform: scale(1); }
+  75%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.98); }
+}
+.act-transition {
+  animation: actFadeInOut 2.8s ease-in-out forwards;
+}
+
+/* ── Streaming cursor blink ──────────────────────────────────────────────── */
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.streaming-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--gold-dim);
+  vertical-align: text-bottom;
+  margin-left: 2px;
+  animation: cursorBlink 0.9s ease-in-out infinite;
+}
+
 /* ── Vignette overlay on body ───────────────────────────────────────────── */
 body::after {
   content: '';
