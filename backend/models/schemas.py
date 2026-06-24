@@ -20,7 +20,7 @@ class ActionRequest(BaseModel):
 
 
 class NewGameRequest(BaseModel):
-    campaign: str = Field("long", description="Campaign mode: 'long'")
+    campaign: str = Field("long", description="Campaign mode: 'long' or 'short'")
     character: dict[str, Any] = Field(
         ...,
         description="Character sheet: name, class, race, level, stats, skills, backstory",
@@ -69,12 +69,15 @@ class ActionResponse(BaseModel):
 class NewGameResponse(BaseModel):
     session_id: str
     campaign_name: str
+    campaign_description: str
     world_state: dict[str, str]
     beliefs: list[NodeBelief]
     current_act: int
     total_acts: int
     scene_text: str
     character: dict[str, Any]
+    dag_meta: dict[str, Any]        # nodes + edges for graph visualisation
+    act_titles: dict[str, str]      # "1" → "Gather the Remnant", etc.
 
 
 class SessionState(BaseModel):
@@ -88,6 +91,33 @@ class SessionState(BaseModel):
     character: dict[str, Any]
     game_over: bool
     final_outcome: str | None
+
+
+class SessionSummary(BaseModel):
+    session_id: str
+    campaign_key: str
+    campaign_name: str
+    character_name: str
+    character_class: str
+    character_level: int
+    created_at: str           # ISO-8601
+    final_outcome: str | None # None = in-progress
+
+
+class ResumeResponse(BaseModel):
+    """Mirrors NewGameResponse so the frontend can hydrate identically."""
+    session_id: str
+    campaign_name: str
+    campaign_description: str
+    world_state: dict[str, str]
+    beliefs: list[NodeBelief]
+    current_act: int
+    total_acts: int
+    scene_text: str
+    character: dict[str, Any]
+    dag_meta: dict[str, Any]
+    act_titles: dict[str, str]
+    entries: list[dict[str, Any]]   # full narrative history
 
 
 class ErrorResponse(BaseModel):

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import GameView from "./components/GameView";
-import { newGame } from "./api";
-import dagMeta from "./dagMeta.json";
+import LoadScreen from "./components/LoadScreen";
+import { newGame, resumeSession } from "./api";
 
 const API = "http://localhost:8000";
 
@@ -74,8 +74,9 @@ function SectionHead({ children }) {
   );
 }
 
-function CharacterForm({ onStart }) {
+function CharacterForm({ onStart, onShowLoad }) {
   const [char, setChar] = useState(DEFAULT_CHARACTER);
+  const [campaign, setCampaign] = useState("long");
   // Raw string values for each stat input, so intermediate typing doesn't reset to 10
   const [rawStats, setRawStats] = useState(
     () => Object.fromEntries(Object.entries(DEFAULT_CHARACTER.stats).map(([k, v]) => [k, String(v)]))
@@ -128,7 +129,7 @@ function CharacterForm({ onStart }) {
     e.preventDefault();
     setIsLoading(true); setError(null);
     try {
-      const result = await newGame(char, "long");
+      const result = await newGame(char, campaign);
       onStart(result, char);
     } catch (err) {
       setError(err.message || "Could not reach the server.");
@@ -145,16 +146,16 @@ function CharacterForm({ onStart }) {
         backgroundImage: "radial-gradient(ellipse at 30% 40%, rgba(90,10,10,0.05) 0%, transparent 55%), radial-gradient(ellipse at 70% 70%, rgba(20,10,50,0.06) 0%, transparent 50%)",
       }}
     >
-      <div className="w-full max-w-lg">
+      <div className="w-full flex flex-col items-center">
 
-        {/* ── Title ── */}
-        <div className="text-center mb-10">
+        {/* ── Title — lives outside max-w-lg so letter-spacing doesn't clip ── */}
+        <div className="text-center mb-10 w-full">
           <p className="text-xs tracking-[0.5em] uppercase mb-4"
             style={{ fontFamily: "Cinzel, serif", color: "var(--parchment-dim)", fontSize: "0.6rem" }}>
             ✦ &nbsp; A Causal Narrative Chronicle &nbsp; ✦
           </p>
           <h1
-            className="tracking-[0.35em] mb-4"
+            className="mb-4"
             style={{
               fontFamily: "'Cinzel Decorative', Cinzel, serif",
               fontSize: "clamp(2.5rem,6vw,3.8rem)",
@@ -162,6 +163,7 @@ function CharacterForm({ onStart }) {
               color: "var(--gold-text)",
               textShadow: "0 0 60px rgba(196,144,48,0.18), 0 2px 4px rgba(0,0,0,0.8)",
               letterSpacing: "0.4em",
+              textAlign: "center",
             }}
           >
             THREADFALL
@@ -180,7 +182,8 @@ function CharacterForm({ onStart }) {
           </p>
         </div>
 
-        {/* ── Form ── */}
+        {/* ── Form constrained to max-w-lg ── */}
+        <div className="w-full max-w-lg">
         <form
           onSubmit={handleStart}
           style={{
@@ -190,6 +193,41 @@ function CharacterForm({ onStart }) {
             boxShadow: "0 0 0 1px var(--border-dim), inset 0 1px 0 rgba(255,255,255,0.02)",
           }}
         >
+          {/* Campaign selector */}
+          <div className="mb-5">
+            <Label>Chronicle</Label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { key: "long",  name: "The Shattered Pact", sub: "5 acts · politics & war" },
+                { key: "short", name: "The Stolen Crown",   sub: "3 acts · heist & intrigue" },
+              ].map(({ key, name, sub }) => {
+                const active = campaign === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setCampaign(key)}
+                    style={{
+                      background: active ? "var(--stone-mid)" : "var(--stone)",
+                      border: `1px solid ${active ? "var(--gold-dim)" : "var(--border)"}`,
+                      color: active ? "var(--parchment)" : "var(--parchment-dim)",
+                      fontFamily: "Cinzel, serif",
+                      padding: "0.6rem 0.75rem",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      transition: "all 0.15s",
+                    }}
+                    onMouseEnter={e => !active && (e.currentTarget.style.borderColor = "var(--border-warm)")}
+                    onMouseLeave={e => !active && (e.currentTarget.style.borderColor = "var(--border)")}
+                  >
+                    <div style={{ fontSize: "0.65rem", letterSpacing: "0.1em", marginBottom: 2 }}>{name}</div>
+                    <div style={{ fontSize: "0.55rem", color: "var(--mist)", fontFamily: "'IM Fell English', serif", fontStyle: "italic" }}>{sub}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Identity header + randomizer */}
           <div className="flex items-center gap-3 mb-3">
             <div style={{ height: 1, flex: 1, background: "var(--border-warm)" }} />
@@ -316,10 +354,30 @@ function CharacterForm({ onStart }) {
           </button>
         </form>
 
+        <button
+          type="button"
+          onClick={onShowLoad}
+          className="w-full mt-3 py-2 uppercase tracking-[0.25em] text-xs transition-all"
+          style={{
+            fontFamily: "Cinzel, serif",
+            background: "transparent",
+            color: "var(--mist)",
+            border: "1px solid var(--border-warm)",
+            borderRadius: 0,
+            cursor: "pointer",
+            fontSize: "0.62rem",
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = "var(--parchment-mid)"}
+          onMouseLeave={e => e.currentTarget.style.color = "var(--mist)"}
+        >
+          ✦ Load Saved Chronicle ✦
+        </button>
+
         <p className="text-center mt-5 uppercase tracking-[0.25em]"
           style={{ fontFamily: "Cinzel, serif", color: "var(--mist)", fontSize: "0.5rem" }}>
           Outcomes governed by Pearl's Causal Hierarchy &nbsp;·&nbsp; LLM narrates only
         </p>
+        </div> {/* end max-w-lg */}
       </div>
     </div>
   );
@@ -327,37 +385,77 @@ function CharacterForm({ onStart }) {
 
 export default function App() {
   const [gameState, setGameState] = useState(null);
+  const [dagMeta,   setDagMeta]   = useState(null);
+  const [screen,    setScreen]    = useState("create"); // "create" | "load"
+  const [loadedEntries, setLoadedEntries] = useState(null); // entries from resume
 
-  function handleStart(result, character) {
+  function _hydrate(result) {
+    setDagMeta(result.dag_meta ?? null);
     setGameState({
-      sessionId: result.session_id,
-      character,
-      worldState: result.world_state,
-      beliefs: result.beliefs,
-      currentAct: result.current_act,
-      totalActs: result.total_acts,
-      sceneText: result.scene_text,
-      gameOver: false,
+      sessionId:    result.session_id,
+      character:    result.character,
+      worldState:   result.world_state,
+      beliefs:      result.beliefs,
+      currentAct:   result.current_act,
+      totalActs:    result.total_acts,
+      sceneText:    result.scene_text,
+      actTitles:    result.act_titles ?? {},
+      campaignName: result.campaign_name,
+      gameOver:     false,
       finalOutcome: null,
     });
+  }
+
+  function handleStart(result, character) {
+    // result from /new_game — character passed separately from the form
+    _hydrate({ ...result, character });
+    setLoadedEntries(null);
+  }
+
+  async function handleResume(sessionId) {
+    const result = await resumeSession(sessionId);
+    setLoadedEntries(result.entries ?? null);
+    _hydrate(result);
   }
 
   function handleStateUpdate(result) {
     setGameState(prev => ({
       ...prev,
-      worldState: result.world_state,
-      beliefs: result.beliefs,
-      currentAct: result.current_act,
-      sceneText: result.scene_text,
-      gameOver: result.game_over,
+      worldState:   result.world_state,
+      beliefs:      result.beliefs,
+      currentAct:   result.current_act,
+      sceneText:    result.scene_text,
+      gameOver:     result.game_over,
       finalOutcome: result.final_outcome,
     }));
   }
 
   function handleRestart() {
     setGameState(null);
+    setLoadedEntries(null);
+    setScreen("create");
   }
 
-  if (!gameState) return <CharacterForm onStart={handleStart} />;
-  return <GameView gameState={gameState} onStateUpdate={handleStateUpdate} dagMeta={dagMeta} onRestart={handleRestart} />;
+  if (gameState) {
+    return (
+      <GameView
+        gameState={gameState}
+        onStateUpdate={handleStateUpdate}
+        dagMeta={dagMeta}
+        onRestart={handleRestart}
+        initialEntries={loadedEntries}
+      />
+    );
+  }
+
+  if (screen === "load") {
+    return (
+      <LoadScreen
+        onResume={handleResume}
+        onBack={() => setScreen("create")}
+      />
+    );
+  }
+
+  return <CharacterForm onStart={handleStart} onShowLoad={() => setScreen("load")} />;
 }

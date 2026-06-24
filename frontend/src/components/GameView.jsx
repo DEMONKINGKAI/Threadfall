@@ -4,13 +4,9 @@ import StatsPanel from "./StatsPanel";
 import CausalGraph from "./CausalGraph";
 import { streamAction } from "../api";
 
-// ── Act metadata ─────────────────────────────────────────────────────────────
-const ACT_TITLES = {
-  1: "Survive the Ambush",
-  2: "Expose the Traitor",
-  3: "Protect the King",
-  4: "Forge the Alliance",
-  5: "The Final Thread",
+// Fallback titles used only if the backend sends none
+const _FALLBACK_ACT_TITLES = {
+  1: "Act I", 2: "Act II", 3: "Act III", 4: "Act IV", 5: "Act V",
 };
 
 // ── Game-over styles ──────────────────────────────────────────────────────────
@@ -67,17 +63,21 @@ function loadEntries(sessionId) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function GameView({ gameState, onStateUpdate, dagMeta, onRestart }) {
+export default function GameView({ gameState, onStateUpdate, dagMeta, onRestart, initialEntries }) {
   const [input,          setInput]          = useState("");
   const [isLoading,      setIsLoading]      = useState(false);
   const [error,          setError]          = useState(null);
-  const [entries,        setEntries]        = useState(() => loadEntries(gameState.sessionId));
+  const [entries,        setEntries]        = useState(() => {
+    // Prefer restored entries from vector DB (resume flow); fall back to localStorage
+    if (initialEntries && initialEntries.length > 0) return initialEntries;
+    return loadEntries(gameState.sessionId);
+  });
   const [streamingEntry, setStreamingEntry] = useState(null);   // in-progress SSE entry
   const [actTransition,  setActTransition]  = useState(null);   // { act, title } while overlay shows
   const inputRef  = useRef(null);
   const prevActRef = useRef(gameState.currentAct);
 
-  const { sessionId, character, worldState, beliefs, currentAct, totalActs, sceneText, gameOver, finalOutcome } = gameState;
+  const { sessionId, character, worldState, beliefs, currentAct, totalActs, sceneText, gameOver, finalOutcome, actTitles = {} } = gameState;
 
   // Task 6 — persist entries to localStorage
   useEffect(() => {
@@ -87,7 +87,8 @@ export default function GameView({ gameState, onStateUpdate, dagMeta, onRestart 
   // Task 8 — act transition overlay
   useEffect(() => {
     if (currentAct !== prevActRef.current && prevActRef.current !== null) {
-      setActTransition({ act: currentAct, title: ACT_TITLES[currentAct] ?? `Act ${currentAct}` });
+      const title = actTitles[String(currentAct)] ?? _FALLBACK_ACT_TITLES[currentAct] ?? `Act ${currentAct}`;
+      setActTransition({ act: currentAct, title });
       const t = setTimeout(() => setActTransition(null), 2800);
       prevActRef.current = currentAct;
       return () => clearTimeout(t);
@@ -317,7 +318,8 @@ export default function GameView({ gameState, onStateUpdate, dagMeta, onRestart 
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="flex gap-3">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+              <div className="flex gap-3">
               <input
                 ref={inputRef}
                 type="text"
@@ -357,6 +359,19 @@ export default function GameView({ gameState, onStateUpdate, dagMeta, onRestart 
               >
                 {isLoading ? "…" : "Act"}
               </button>
+              </div>
+              {/* Task 11 — character counter */}
+              <div className="flex justify-end">
+                <span style={{
+                  fontFamily: "Cinzel, serif",
+                  fontSize: "0.5rem",
+                  letterSpacing: "0.1em",
+                  color: input.length > 360 ? "var(--failure-text)" : input.length > 280 ? "var(--partial-text)" : "var(--mist)",
+                  transition: "color 0.2s",
+                }}>
+                  {input.length}/400
+                </span>
+              </div>
             </form>
           )}
           {error && <p className="text-xs mt-2 italic" style={{ color: "var(--failure-text)" }}>{error}</p>}
@@ -378,8 +393,11 @@ export default function GameView({ gameState, onStateUpdate, dagMeta, onRestart 
             Chronicle
           </span>
           <button
-            onClick={onRestart}
-            title="Start a new chronicle"
+            onClick={() => {
+              if (gameOver) { onRestart(); return; }
+              if (window.confirm("Your progress is saved. Return to the main screen?")) onRestart();
+            }}
+            title={gameOver ? "Start a new chronicle" : "Save and return to main screen"}
             style={{
               background: "none",
               border: "none",
@@ -393,7 +411,7 @@ export default function GameView({ gameState, onStateUpdate, dagMeta, onRestart 
             onMouseEnter={e => e.currentTarget.style.color = "var(--blood-bright)"}
             onMouseLeave={e => e.currentTarget.style.color = "var(--mist)"}
           >
-            ↺ restart
+            {gameOver ? "↺ restart" : "⊳ save & exit"}
           </button>
         </div>
 

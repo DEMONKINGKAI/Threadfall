@@ -79,3 +79,19 @@ export async function streamAction(sessionId, playerInput, { onEngine, onToken, 
     onError(e.message);
   }
 }
+
+export async function listSessions() {
+  const res = await fetch(`${BASE}/sessions`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json(); // SessionSummary[]
+}
+
+export async function resumeSession(sessionId) {
+  const res = await fetch(`${BASE}/resume_session/${sessionId}`, { method: "POST" });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json(); // ResumeResponse
+}
+
+export async function deleteSession(sessionId) {
+  await fetch(`${BASE}/session/${sessionId}`, { method: "DELETE" });
+}

@@ -10,6 +10,8 @@ export default defineConfig({
       "/action":              "http://localhost:8000",
       "/stream_action":       "http://localhost:8000",
       "/session":             "http://localhost:8000",
+      "/sessions":            "http://localhost:8000",
+      "/resume_session":      "http://localhost:8000",
       "/randomize_character": "http://localhost:8000",
     },
   },

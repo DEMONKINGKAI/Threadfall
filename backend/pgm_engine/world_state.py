@@ -204,17 +204,24 @@ class WorldState:
             return
         try:
             query_vars = list(self._bn_nodes.keys())
-            evidence = {k: v for k, v in self._evidence.items() if k in self._bn_nodes}
+            evidence_idx = {k: v for k, v in self._evidence.items() if k in self._bn_nodes}
+
+            # pgmpy VariableElimination.query() requires state *names* (not integer
+            # indices) when state_names are declared in the CPTs.
+            evidence = {
+                k: self._bn_nodes[k].states[v]
+                for k, v in evidence_idx.items()
+            }
 
             # Query one variable at a time to avoid large joint queries
             for var in query_vars:
                 if var in evidence:
                     # Hard evidence: spike distribution
                     node = self._bn_nodes[var]
-                    idx = evidence[var]
+                    state_name = evidence[var]
                     self._beliefs[var] = {
-                        s: (1.0 if i == idx else 0.0)
-                        for i, s in enumerate(node.states)
+                        s: (1.0 if s == state_name else 0.0)
+                        for s in node.states
                     }
                 else:
                     result = self._inference.query(

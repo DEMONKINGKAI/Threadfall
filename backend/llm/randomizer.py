@@ -118,7 +118,7 @@ def randomize_character() -> dict:
     if _HF_TOKEN:
         for model in _MODELS:
             try:
-                client = InferenceClient(model=model, token=_HF_TOKEN)
+                client = InferenceClient(model=model, token=_HF_TOKEN, timeout=30)
                 response = client.chat_completion(
                     messages=[
                         {"role": "system", "content": _SYSTEM},
